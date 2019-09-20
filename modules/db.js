@@ -1,5 +1,5 @@
 var mongoose = require("mongoose");
-mongoose.connect('mongodb://192.168.21.56:27017/cw',{
+mongoose.connect('mongodb://47.98.43.2:27017/cw',{
   useCreateIndex:true,
   useNewUrlParser:true
 });

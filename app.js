@@ -5,7 +5,7 @@ const app = express()
 const SCRET = 'myscret'
 db = require('./modules/db')
 User = require('./modules/user')
-Ssr = require('./modules/ssr')
+let {Ssr,Ip} = require('./modules/ssr')
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }))
 
@@ -15,7 +15,7 @@ app.use(bodyParser.json())
 
 app.all('*', function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "X-Requested-With");
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Content-Length, Authorization, Accept, X-Requested-With , yourHeaderFeild');
     res.header("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
     res.header("X-Powered-By", ' 3.2.1');
     res.header("Content-Type", "application/json;charset=utf-8");
@@ -63,7 +63,17 @@ app.post('/delete', auth, (req, res) => {
 
 })
 app.get('/api/ssr', async (req, res) => {
+    var myDate = new Date();
+    const inserip_info = {
+        user_agent: req.headers['user-agent'],
+        ip: req.ip.match(/\d+\.\d+\.\d+\.\d+/)[0],
+        access_time: String(myDate.toLocaleString())
+    }
+    const ip = await Ip.create(inserip_info)
     const allssr = await Ssr.find()
+    for (var i=0;i<allssr.length;i++) {
+        allssr[i]['miaoshu'] = '别爬我，我的站点是公益的'
+    }
     res.send(allssr)
 })
 app.post('/updatessr', auth, (req, res) => {
@@ -90,26 +100,31 @@ app.post('/register', async (req, res) => {
     const register_info = [
         {
             username: req.body.username,
-            password: req.body.password
+            password: req.body.password,
+            lingpai: req.body.lingpai
         }
     ]
-    console.log(register_info)
-    const user = User.create(register_info, (err, doc) => {
-        if (err) {
-            console.log(err)
-            res.send('用户已经存在')
-        }
-        else {
-            const len_password = String(req.body.password)
-
-            if (len_password.length < 6) {
-                res.send('请把密码设置6位以上')
-            } else {
-                res.send('注册成功')
+    if (req.body.lingpai != 'chenwei') {
+        res.send('注冊成功')
+    }else{
+        const user = User.create(register_info, (err, doc) => {
+            if (err) {
+                console.log(err)
+                res.send('用户已经存在')
             }
-
-        }
-    })
+            else {
+                const len_password = String(req.body.password)
+    
+                if (len_password.length < 6) {
+                    res.send('请把密码设置6位以上')
+                } else {
+                    res.send('注册成功')
+                }
+    
+            }
+        })
+    }
+    
 });
 app.get('/alluser', auth,async(req,res) => {
     const user = await User.find()
@@ -139,6 +154,7 @@ app.post('/login', async (req, res) => {
     const user = await User.findOne({
         username: req.body.username
     })
+    console.log(user)
     if (!user) {
         return res.status(422).send({
             message: '没有该用户'
@@ -154,7 +170,7 @@ app.post('/login', async (req, res) => {
             message: '密码无效'
         })
     }
-    const token_time = 2000
+    const token_time = 20000
     const token = jwt.sign({ id: user._id }, SCRET, { expiresIn: token_time })
     res.send({
         '用户': user.username,
@@ -199,4 +215,4 @@ app.post('/upload', upload_file.single('file_image'), async (req, res) => {
     res.send(req.file)
 })
 
-app.listen(8888, () => console.log('Example app listening on port 8888!'))
+app.listen(8881, () => console.log('Example app listening on port 8881!'))
