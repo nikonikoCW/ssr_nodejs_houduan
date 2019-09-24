@@ -67,7 +67,7 @@ app.get('/api/ssr', async (req, res) => {
     const inserip_info = {
         user_agent: req.headers['user-agent'],
         ip: req.ip.match(/\d+\.\d+\.\d+\.\d+/)[0],
-        access_time: String(myDate.toLocaleString())
+        access_time: String((new Date()).valueOf())
     }
     const ip = await Ip.create(inserip_info)
     const allssr = await Ssr.find()
@@ -75,6 +75,14 @@ app.get('/api/ssr', async (req, res) => {
         allssr[i]['miaoshu'] = '别爬我，我的站点是公益的'
     }
     res.send(allssr)
+})
+app.post('/api/ip', auth , async(req,res) => {
+    // console.log('chaxun ip')
+    let start = req.body.start_time
+    let end = req.body.end_time
+    const ip = await Ip.find({access_time: {$gte: start, $lt: end}})
+    // console.log(ip)
+    res.send({ip,tools:ip.length})
 })
 app.post('/updatessr', auth, (req, res) => {
     const update_id = {
