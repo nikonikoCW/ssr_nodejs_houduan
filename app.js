@@ -76,12 +76,26 @@ app.get('/api/ssr', async (req, res) => {
     }
     res.send(allssr)
 })
+//时间戳转年/月/日 时:分:秒
+function timestampToTime(timestamp) {
+    var date = new Date(timestamp * 1000);//时间戳为10位需*1000，时间戳为13位的话不需乘1000
+    var Y = date.getFullYear() + '/';
+    var M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '/';
+    var D = date.getDate() + ' ';
+    var h = date.getHours() + ':';
+    var m = date.getMinutes() + ':';
+    var s = date.getSeconds();
+    return Y+M+D+h+m+s;
+}
 app.post('/api/ip', auth , async(req,res) => {
-    // console.log('chaxun ip')
     let start = req.body.start_time
     let end = req.body.end_time
     const ip = await Ip.find({access_time: {$gte: start, $lt: end}})
-    // console.log(ip)
+    for(let i in ip){
+        let basetime = ip[i]['access_time'].substring(0, 10)
+        ip[i]['access_time'] = timestampToTime(basetime)
+        // console.log(timestampToTime(basetime))
+    }
     res.send({ip,tools:ip.length})
 })
 app.post('/updatessr', auth, (req, res) => {
