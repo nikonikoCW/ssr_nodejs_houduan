@@ -10,7 +10,8 @@ const SsrSchema = new mongoose.Schema({
 const IpSchema = new mongoose.Schema({
     ip: String,
     user_agent: String,
-    access_time: String
+    access_time: String,
+    YMD_access_time:String
 })
 const Ssr = mongoose.model('ssrclass', SsrSchema) // newClass为创建或选中的集合
 const Ip = mongoose.model('ipclass', IpSchema)

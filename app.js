@@ -62,13 +62,28 @@ app.post('/delete', auth, (req, res) => {
 
 
 })
+//获取当前时间 例如：2019年9月27日 17:42:40 星期五
+function timeNow(){
+    var date = new Date();
+    this.year = date.getFullYear();
+    this.month = date.getMonth() + 1;
+    this.date = date.getDate();
+    this.day = new Array("星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六")[date.getDay()];
+    this.hour = date.getHours() < 10 ? "0" + date.getHours() : date.getHours();
+    this.minute = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
+    this.second = date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
+    var currentTime = this.year + "年" + this.month + "月" + this.date + "日 " + this.hour + ":" + this.minute + ":" + this.second + " " + this.day;
+    return currentTime
+}
 app.get('/api/ssr', async (req, res) => {
-    var myDate = new Date();
+    console.log(timeNow())
     const inserip_info = {
         user_agent: req.headers['user-agent'],
         ip: req.ip.match(/\d+\.\d+\.\d+\.\d+/)[0],
-        access_time: String((new Date()).valueOf())
+        access_time: String((new Date()).valueOf()),
+        YMD_access_time:String(timeNow())
     }
+    
     const ip = await Ip.create(inserip_info)
     const allssr = await Ssr.find()
     for (var i=0;i<allssr.length;i++) {
@@ -152,7 +167,7 @@ app.get('/alluser', auth,async(req,res) => {
     const user = await User.find()
     const useranme_list = []
     for(var i=0;i<user.length;i++){
-        useranme_list.push(user[i]['username'])
+        useranme_list.push({'username':user[i]['username']})
     }
     
     console.log(useranme_list)
