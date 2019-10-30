@@ -5,7 +5,7 @@ const app = express()
 const SCRET = 'myscret'
 db = require('./modules/db')
 User = require('./modules/user')
-let {Ssr,Ip} = require('./modules/ssr')
+let {Ssr,Ip,BanIp} = require('./modules/ssr')
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }))
 
@@ -76,20 +76,50 @@ function timeNow(){
     return currentTime
 }
 app.get('/api/ssr', async (req, res) => {
-    console.log(timeNow())
+    // console.log(timeNow())
     const inserip_info = {
         user_agent: req.headers['user-agent'],
         ip: req.ip.match(/\d+\.\d+\.\d+\.\d+/)[0],
         access_time: String((new Date()).valueOf()),
         YMD_access_time:String(timeNow())
     }
-    
+    console.log(inserip_info.ip)
     const ip = await Ip.create(inserip_info)
     const allssr = await Ssr.find()
+
     for (var i=0;i<allssr.length;i++) {
+        // let aa = String(allssr[i]['ssr']).replace('R','ac')
+        // allssr[i]['ssr'] = aa
+        // console.log(allssr[i]['ssr'])
         allssr[i]['miaoshu'] = '别爬我，我的站点是公益的'
     }
     res.send(allssr)
+})
+app.get('/api/hadbanip', auth , async(req,res) => {
+    const banip = await BanIp.find()
+    res.send(banip)
+})
+app.post('/api/banip', auth , async(req,res) => {
+    let data_list = []
+    for(let i in req.body.ip){
+        data_list.push({
+            ip: req.body.ip[i],
+            create_time: String(parseInt((new Date()).valueOf()/1000)),
+        })
+    }
+    banip = await BanIp.insertMany(data_list)
+    res.send(data_list)
+})
+app.post('/api/clearbanip', auth , async(req,res) => {
+    let delete_list = {
+        'ip':req.body.ip
+    }
+    clearbanip = await BanIp.deleteMany(delete_list, function(err){
+        if (err) {
+            console.log(err)
+        }
+        res.send('操作已经完成')
+    })
 })
 //时间戳转年/月/日 时:分:秒
 function timestampToTime(timestamp) {
@@ -113,6 +143,7 @@ app.post('/api/ip', auth , async(req,res) => {
     }
     res.send({ip,tools:ip.length})
 })
+
 app.post('/updatessr', auth, (req, res) => {
     const update_id = {
         _id: req.body.id
@@ -141,6 +172,7 @@ app.post('/register', async (req, res) => {
             lingpai: req.body.lingpai
         }
     ]
+    console.log(req.body.lingpai)
     if (req.body.lingpai != 'chenwei') {
         res.send('注冊成功')
     }else{

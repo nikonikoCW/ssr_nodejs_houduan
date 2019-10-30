@@ -1,4 +1,6 @@
 var mongoose = require("mongoose");
+//mongodb+srv://cwmlab:<password>@niconico-21aoa.azure.mongodb.net/test?retryWrites=true&w=majority
+//mongodb://47.98.43.2:27017/cw
 mongoose.connect('mongodb://47.98.43.2:27017/cw',{
   useCreateIndex:true,
   useNewUrlParser:true
